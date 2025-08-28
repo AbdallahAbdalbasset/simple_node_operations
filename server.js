@@ -55,6 +55,18 @@ const server = http.createServer((req, res) => {
         })
     }
 
+    else if (req.method === "GET" && req.url === "/style.css") {
+        fs.readFile("style.css", (err, data) => {
+            if (err) {
+               res.writeHead(500, { "Content-Type": "text/plain" });
+                res.end("Error loading style.css");
+            } else {
+              res.writeHead(200, { "Content-Type": "text/css" });
+             res.end(data);
+            }
+        })
+    }
+
     else if(req.method == "POST" && req.url == "/"){
         let body = ''
         req.on('data', (chunk) => {body += chunk.toString()})
@@ -75,24 +87,17 @@ const server = http.createServer((req, res) => {
     }
 
     else if(req.method == "GET" && req.url == "/show"){
-        res.statusCode = 200
-        res.setHeader('Content-Type', 'text/html')
-        const tableHtml = generateUsersTable(users);
-        const page = `
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <title>Users List</title>
-                </head>
-                <body>
-                    <h1>All Submitted Users</h1>
-                    ${tableHtml}
-                    <a href="/"> <button> Back </button> </a>
-                </body>
-            </html>
-        `;
-
-        res.end(page);
+        fs.readFile("show.html", "utf8", (err, data) => {
+            if (err) {
+                res.writeHead(500, { "Content-Type": "text/plain" });
+                res.end("Error loading show.html");
+            } else {
+                const tableHtml = generateUsersTable(users);
+                const page = data.replace("{{usersTable}}", tableHtml);
+                res.writeHead(200, { "Content-Type": "text/html" });
+                res.end(page);
+            }
+        });
     }
     else {
         console.log("Error 404 !")
